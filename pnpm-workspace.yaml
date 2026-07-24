@@ -1,0 +1,5 @@
+# esbuild's postinstall installs its platform-specific binary, which Vite — and
+# therefore VitePress — needs in order to build. It is the only dependency
+# allowed to run install scripts here; everything else stays sandboxed.
+allowBuilds:
+  esbuild: true
