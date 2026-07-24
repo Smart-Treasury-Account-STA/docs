@@ -1,12 +1,28 @@
 import { defineConfig } from "vitepress";
 
+// The site is served from https://smarttreasury.io/docs/. The Next.js app owns
+// the apex domain and proxies /docs/* to this project's own Vercel deployment,
+// so the docs share the marketing site's origin for SEO.
+const SITE_URL = process.env.SITE_URL ?? "https://smarttreasury.io";
+
+// Kept in one place: VitePress applies `base` to asset and link URLs, but not
+// to sitemap entries. Building the sitemap hostname from the same constant is
+// what stops the sitemap advertising URLs that do not exist.
+const BASE = "/docs/";
+
 export default defineConfig({
   title: "Smart Treasury Account",
   description:
     "Technical documentation for the Smart Treasury Account Soroban contracts: architecture, entrypoints, security model, test suite, and deployment.",
   lang: "en-US",
+  base: BASE,
   cleanUrls: true,
   lastUpdated: true,
+  srcExclude: ["README.md"],
+
+  sitemap: {
+    hostname: `${SITE_URL}${BASE}`,
+  },
 
   head: [
     ["meta", { name: "theme-color", content: "#2563eb" }],
