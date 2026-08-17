@@ -1,6 +1,7 @@
 # Policy-version pinning
 
-**Status: implemented and tested** in the PolicyEngine.
+**Status: implemented and tested**, in both the PolicyEngine and SmartAccount,
+live on Stellar testnet.
 
 ## The problem
 
@@ -23,20 +24,32 @@ Every policy-checked action carries the version it was approved under:
 
 ```rust
 pub struct PolicyCheck {
+    pub operation: Symbol,
     pub asset: Address,
     pub destination: Address,
     pub amount: i128,
     pub expected_version: u32,  // pinned at approval time
-    pub operation: Symbol,
 }
 ```
 
 The engine compares `expected_version` against the live version and rejects a
-mismatch with `PolicyVersionMismatch` (2007) before evaluating any rule.
+mismatch with `VersionMismatch` (2006) — checked second, right after
+confirming the engine is initialized, before any asset/recipient/amount rule
+is evaluated.
 
 The version is **strictly monotonic**. `bump_version` rejects any value not
-greater than the current one, so a version cannot be replayed to resurrect an
-old approval. An approval that was rejected once stays rejected.
+greater than the current one (`InvalidVersion`, 2007), so a version cannot be
+replayed to resurrect an old approval. An approval that was rejected once
+stays rejected.
+
+[SmartAccount](/contracts/smart-account) carries this pin all the way
+through: `execute_transfer_payment`/`execute_split_payment` take a caller-
+supplied `expected_policy_version` and pass it straight to
+`policy_engine.validate_policy` before touching the adapter. Scheduled
+payments pin it even earlier — `create_scheduled_payment` overwrites the
+caller-supplied value with the _live_ policy version at creation time, so a
+schedule is bound to what was actually in effect when the signer approved it,
+not whatever version happens to be live when it executes later.
 
 ## What this buys
 
@@ -55,7 +68,7 @@ A treasury allows USDC transfers to a vendor, capped at 1,000.
    `expected_version: 4`. It waits for Bob's signature.
 2. An admin lowers the cap to 500 and calls `bump_version(5)`.
 3. Bob signs. The payment is submitted with `expected_version: 4`.
-4. The engine rejects it — `PolicyVersionMismatch`. The 900 payment does not
+4. The engine rejects it — `VersionMismatch`. The 900 payment does not
    execute against a policy that now caps transfers at 500.
 5. Alice re-prepares under version 5. The engine now rejects it as
    `AmountAboveLimit` — the honest answer.
@@ -73,19 +86,20 @@ a bump; this is a user-visible consequence, not an implementation detail.
 
 ## Audit signal
 
-Every bump emits `VersionBumped { previous, next }`. This is the event that
-explains why a previously valid approval started being rejected. Index it.
+Every bump emits `PolicyVersionBumped { next_version }`. This is the event
+that explains why a previously valid approval started being rejected. Index
+it.
 
 ## Tests
 
-| Test                                            | Asserts                                                                                                  |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `rejects_a_stale_expected_version_after_a_bump` | A payment valid at version 1 is rejected after a bump to 2, and the same payment pinned to 2 is accepted |
-| `rejects_a_non_monotonic_version_bump`          | Bumping to the current version or lower is rejected                                                      |
-| `initializes_with_version_one`                  | A fresh engine starts at version 1                                                                       |
+| Test                                                  | Asserts                                                                                                                                       |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rejects_stale_policy_version_and_amount_above_limit` | A payment pinned to a version below the current one is rejected `VersionMismatch`; an amount above the new cap is rejected `AmountAboveLimit` |
+| `bump_version_rejects_non_increasing_version`         | Bumping to the current version, or lower, is rejected `InvalidVersion`                                                                        |
+| `validates_allowed_payment_policy`                    | A payment pinned to the current live version, within all rules, is accepted                                                                   |
 
-Run them with `cargo test -p sta-policy-engine`.
-
-The SmartAccount side — passing `expected_policy_version` through
-`execute_transfer_payment` to the engine before moving funds — is
-[specified but not implemented](/contracts/smart-account).
+Run them with `cargo test -p sta-policy-engine`. See [SmartAccount](/contracts/smart-account)
+for the tests covering the pin being carried through `execute_transfer_payment`
+and `create_scheduled_payment`, and `docs/TESTNET_DEPLOYMENT.md` in the
+`smart-contracts` repository for a live, reproducible stale-version rejection
+against the deployed contract.

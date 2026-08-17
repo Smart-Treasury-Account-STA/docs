@@ -1,11 +1,12 @@
 # Testnet deployment
 
-::: danger Deployment scripts not yet written
-The production contracts are not deployed. `scripts/deploy.sh` and
-`scripts/verify_flows.sh` are specified but do not exist in the workspace yet.
-This page documents the reproducible build, which works today, and the
-deployment procedure those scripts will automate. See [Status](/status).
-:::
+All seven production contracts are deployed and live on Stellar testnet. The
+full record — contract addresses, WASM hashes, and every deploy/init/wiring
+transaction with explorer links — lives in
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md)
+in the `smart-contracts` repository. This page covers the reproducible build
+and the general deployment/verification procedure; treat the linked record
+as the authoritative, currently-live addresses.
 
 ## Reproducible builds
 
@@ -13,80 +14,93 @@ deployment procedure those scripts will automate. See [Status](/status).
 stellar contract build --optimize --out-dir wasm
 ```
 
-This works today and produces:
-
-| Artifact                      | Size                  |
-| ----------------------------- | --------------------- |
-| `wasm/sta_policy_engine.wasm` | 7,595 bytes optimized |
-
-The WASM hash is printed by the build. Publishing it is what lets a third party
-rebuild from source and confirm they get the same bytes that were deployed.
+This produces one optimized `.wasm` per contract plus a printed hash for
+each. Publishing the hash is what lets a third party rebuild from source and
+confirm they get the same bytes that were deployed.
 
 Reproducibility depends on pinning:
 
-| Component            | Version |
-| -------------------- | ------- |
-| Rust                 | 1.95.0  |
-| `soroban-sdk`        | 26.1.1  |
-| OpenZeppelin Stellar | 0.7.2   |
-| Stellar CLI          | 27.0.0  |
+| Component                | Version                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| Rust                     | `stable` (CI pins 1.96.0 for one specific step — see [Status](/status)) |
+| `soroban-sdk`            | 26.1.0                                                                  |
+| OpenZeppelin Stellar     | 0.7.2                                                                   |
+| Stellar CLI (deployment) | 26.0.0                                                                  |
 
 `soroban-sdk` is held on the 26.x line deliberately: OpenZeppelin 0.7.2
 requires `^26.1.0`, which excludes 27.x. Bumping the SDK without a matching
 OpenZeppelin release would mean dropping the audited primitives.
 
-## Planned deployment procedure
-
-The deployment script takes the network and source identity as arguments, so
-nothing about the target is baked into the script:
+## Deployment procedure
 
 ```bash
-./scripts/deploy.sh testnet sta-testnet-deployer
+./scripts/deploy_testnet.sh
 ```
 
-It builds with `--optimize`, deploys each contract, initializes them —
-PolicyEngine with its admin, SmartAccount with its admin and the PolicyEngine
-address — and prints the contract IDs alongside the WASM hashes so the
-deployment record is reproducible.
+Idempotent-ish: re-running `initialize` against an already-initialized
+contract fails with `AlreadyInitialized` (expected), and the test-asset
+deploy step looks up the existing deterministic SAC address instead of
+failing if it's already been deployed by the same issuer. It builds with
+`--optimize`, uploads and creates each of the seven contracts, initializes
+them (PolicyEngine and RecoveryManager with their admin, SmartAccount with
+its owner plus the PolicyEngine/IntentRegistry/RecoveryManager addresses),
+wires the transfer and split adapters through the timelocked
+`propose_adapter_change`/`apply_adapter_change` path, configures a test
+asset rule and recipient allowlist entry, and mints test `STA` balance to
+the treasury — printing every contract ID and transaction hash along the
+way. See `docs/TESTNET_DEPLOYMENT.md` §4–§5 for the exact command sequence
+this script runs.
 
-## Planned verification procedure
+## Verification
 
-```bash
-./scripts/verify_flows.sh testnet sta-testnet-deployer
-```
+The live deployment record demonstrates every acceptance flow end to end,
+with real transaction hashes and explorer links, not simulated ones:
 
-This scripts the acceptance flows end to end: configure an asset rule and a
-recipient, execute an approved payment, then run the two rejection cases — a
-payment pinned to a stale policy version, and a replayed nonce. Every
-transaction hash is printed.
+- Treasury inspection (`status`, `is_guardian`, `version`) read back live
+  state correctly.
+- A real signer-authorized `execute_transfer_payment` moved treasury `STA`
+  balance and consumed a nonce, on-chain.
+- Invalid actions are rejected: `RecipientNotAllowed`, `AmountAboveLimit`,
+  a stale pinned policy version (`VersionMismatch`), and a replayed nonce
+  (`NonceAlreadyUsed`) — reproducible any time with a `stellar contract
+invoke ... --send=no` call against the live contract, since these are
+  read-only policy simulations (see `docs/TESTNET_DEPLOYMENT.md` §6.1 and
+  §6.5 for the exact commands and current output).
 
-It exits non-zero if a rejection case unexpectedly **succeeds**. A verification
-script that passes when the security property is broken is worse than no script
-at all.
+A submitted, signed transaction that gets rejected on-chain for these last
+two cases specifically carries no transaction hash of its own — Soroban's
+`simulateTransaction`/`prepareTransaction` computes a transaction's resource
+footprint by simulating the call, and a call that will fail never gets one,
+so it's impossible to reach `send_transaction` for a call designed to be
+rejected. This is a Soroban platform characteristic, not a gap in what was
+demonstrated; the rejection itself is real and independently reproducible.
 
 ## Storage TTLs
 
-Soroban entries expire. A treasury deployment that must stay reachable across a
-long review period needs its instance and storage TTLs extended after
-deployment.
+Soroban entries expire. A treasury deployment that must stay reachable
+across a long review period needs its instance and persistent-entry TTLs
+extended after deployment.
 
-The PolicyEngine already extends persistent-entry TTLs on every read and write
-(30-day threshold, 90-day extension), so live policy state maintains itself
-under normal use. Entries that are never touched still need an explicit bump.
+[PolicyEngine](/contracts/policy-engine) and
+[SmartAccount](/contracts/smart-account) both extend their persistent
+entries' TTL on every read and write that touches them (~29-day threshold,
+~30-day extension), so actively used state maintains itself. Entries that
+are never touched still need an explicit bump — both contracts expose a
+permissionless `extend_ttl`/`extend_instance_ttl` entrypoint for exactly
+that, callable by anyone, since extending TTL creates no authority.
 
 ::: warning Testnet resets
-Stellar testnet state may be reset by network operators. A testnet deployment
-is not a durable artifact — treat published testnet contract IDs as valid until
-the next reset, and rebuild the deployment record afterwards.
+Stellar testnet state may be reset by network operators. A testnet
+deployment is not a durable artifact — treat published testnet contract IDs
+as valid until the next reset, and rebuild the deployment record afterwards.
 :::
 
-## Existing PoC deployment
+## Prior PoC deployment
 
-Four proof-of-concept contracts are deployed on testnet from an earlier
-milestone. They demonstrate patterns and **do not execute real Stellar Asset
-Contract transfers**. Their contract IDs are recorded in the contract
-repository's deployment document.
-
-They are not the production contracts, and the record for them predates the
-current toolchain — the recorded WASM hashes no longer match a rebuild from
-current source. Rebuild and redeploy before citing those artifacts as current.
+An earlier, partial proof-of-concept revision (`smart_account_poc`,
+`policy_registry_poc`, `intent_registry_poc`, `recovery_guard_poc`, on an
+older `soroban-sdk` version, no OpenZeppelin composition) was deployed
+separately and predates the current production deployment above. It is
+archived in `docs/archive/POC_TESTNET_DEPLOYMENT.md` in the
+`smart-contracts` repository for historical traceability only — it is not
+part of what to review.

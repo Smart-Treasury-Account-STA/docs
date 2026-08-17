@@ -8,10 +8,11 @@ Built with [VitePress](https://vitepress.dev).
 
 ## Purpose
 
-This site is the documentation deliverable for Milestone 1, Deliverable 2
-(smart contract test suite and documentation). It covers what the contracts
-do, what guarantees they make, how to run the tests that prove those
-guarantees, and how to deploy to testnet.
+This site is the living technical documentation for the Smart Treasury
+Account contracts, originally delivered for Milestone 1, Deliverable 2
+(smart contract test suite and documentation) and kept current since. It
+covers what the contracts do, what guarantees they make, how to run the
+tests that prove those guarantees, and how to deploy to testnet.
 
 It documents only what exists. Modules that are specified but not yet
 implemented are marked as such on every page and tracked on `/status`.
