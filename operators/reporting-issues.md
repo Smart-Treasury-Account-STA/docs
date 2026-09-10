@@ -12,16 +12,17 @@ not, is a security report. Do **not** open a public issue for it, and do not
 post transaction hashes that demonstrate it; the contracts on mainnet hold
 real value.
 
-Report it privately to the maintainers listed on the
-[Smart-Treasury-Account-STA](https://github.com/Smart-Treasury-Account-STA)
-GitHub organization, as the [security model](/security/) page also asks.
+Report it privately through GitHub's vulnerability reporting form on the
+`smart-contracts` repository, whichever component the finding is in:
 
-::: warning No dedicated security mailbox yet
-There is no `SECURITY.md` or published security address in the repositories
-today, and GitHub's private vulnerability reporting is not enabled on them.
-Contact a maintainer of the organization directly. This page will be updated
-when a dedicated channel exists.
-:::
+<https://github.com/Smart-Treasury-Account-STA/smart-contracts/security/advisories/new>
+
+Only maintainers see the report. The organization's
+[security policy](https://github.com/Smart-Treasury-Account-STA/.github/blob/main/SECURITY.md)
+states the scope, what is out of scope, and what to expect; it applies to
+every repository. If the form is unavailable to you, open a public issue
+titled "Security report, please contact me" with **no details**, and a
+maintainer will reply with a private channel.
 
 Include:
 
@@ -35,10 +36,11 @@ Include:
 | Wallet and version   | Freighter or other, with its version, if the dApp is involved                                          |
 | Browser              | name and version, if the dApp is involved                                                              |
 
-What to expect: a maintainer acknowledges the report, reproduces it, and
-coordinates a fix and disclosure with you. No response time is promised: this
-is a small team without an on-call rotation, and saying otherwise here would
-be a claim the project cannot back.
+What to expect: an acknowledgement within three business days as a target,
+not a guarantee (a small team, no on-call rotation), triage and a severity
+assessment with you, a fix developed privately, and coordinated disclosure
+through a GitHub Security Advisory within 90 days at the latest, with credit
+unless you prefer otherwise. There is no bug bounty program.
 
 ## Bugs and questions: GitHub issues
 

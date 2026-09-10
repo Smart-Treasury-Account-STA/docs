@@ -97,5 +97,10 @@ documented here, independent of which relayer implementation calls them.
 
 ## Reporting an issue
 
-Report suspected vulnerabilities privately to the maintainers rather than
-opening a public issue.
+Report suspected vulnerabilities privately, never in a public issue, through
+the
+[vulnerability reporting form](https://github.com/Smart-Treasury-Account-STA/smart-contracts/security/advisories/new)
+of the `smart-contracts` repository. The organization's
+[security policy](https://github.com/Smart-Treasury-Account-STA/.github/blob/main/SECURITY.md)
+defines the scope and what to expect; [Reporting issues](/operators/reporting-issues)
+lists what to include.
