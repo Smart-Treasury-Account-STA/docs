@@ -117,7 +117,7 @@ explicitly documented upstream characteristic of the composed OZ crate, not
 something this contract adds or removes. Removing a signer can push
 available weight below the stored threshold; adding one without configuring
 its weight silently changes the effective approval ratio. See
-[`docs/V1_SCOPE.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/V1_SCOPE.md)
+[`docs/V1_SCOPE.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/V1_SCOPE.md)
 § "Signer Set Divergence" for the full detail and the operational runbook
 this implies.
 
@@ -150,7 +150,7 @@ same length (`RecipientAmountLengthMismatch`) before any policy check runs.
 `propose_adapter_change`/`apply_adapter_change`/`cancel_adapter_change`
 exist because immediate, undelayed reconfiguration of _where funds are
 routed_ was a finding from an independent security review
-([`docs/SMART_CONTRACT_AUDIT_REPORT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/SMART_CONTRACT_AUDIT_REPORT.md)
+([`docs/SMART_CONTRACT_AUDIT_REPORT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/SMART_CONTRACT_AUDIT_REPORT.md)
 finding 3). A proposal only takes effect `ADAPTER_CHANGE_DELAY_LEDGERS`
 (~1 day) after it's proposed — the same delay `recovery_manager` uses for
 its own timelocks — giving anyone monitoring the account a window to react
@@ -210,7 +210,7 @@ replay guard on `apply_recovery`) or a raised freeze flag.
 inside `policy_engine` (`VersionMismatch`, 2006 — see
 [PolicyEngine](/contracts/policy-engine)) are the two specific rejections
 demonstrated live on testnet — see
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md)
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md)
 §6.4–§6.5.
 
 ## Events
@@ -253,4 +253,4 @@ wasm/sta_smart_account.wasm — 65,076 bytes optimized, 37 exported functions
 ```
 
 Live deployed WASM hash and testnet contract ID: see
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md).
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md).

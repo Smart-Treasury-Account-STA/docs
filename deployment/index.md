@@ -3,7 +3,7 @@
 All seven production contracts are deployed and live on Stellar testnet. The
 full record — contract addresses, WASM hashes, and every deploy/init/wiring
 transaction with explorer links — lives in
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md)
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md)
 in the `smart-contracts` repository. This page covers the reproducible build
 and the general deployment/verification procedure; treat the linked record
 as the authoritative, currently-live addresses.
@@ -20,12 +20,12 @@ confirm they get the same bytes that were deployed.
 
 Reproducibility depends on pinning:
 
-| Component                | Version                                                                 |
-| ------------------------ | ----------------------------------------------------------------------- |
-| Rust                     | `stable` (CI pins 1.96.0 for one specific step — see [Status](/status)) |
-| `soroban-sdk`            | 26.1.0                                                                  |
-| OpenZeppelin Stellar     | 0.7.2                                                                   |
-| Stellar CLI (deployment) | 26.0.0                                                                  |
+| Component                | Version                                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Rust                     | 1.94.1, pinned by the repository toolchain file (CI pins 1.96.0 for the stellar-cli install step only — see [Status](/status)) |
+| `soroban-sdk`            | 26.1.0                                                                                                                         |
+| OpenZeppelin Stellar     | 0.7.2                                                                                                                          |
+| Stellar CLI (deployment) | 26.0.0 exactly — stamped into every artifact's `cliver` metadata, so the recorded hashes only reproduce with this version      |
 
 `soroban-sdk` is held on the 26.x line deliberately: OpenZeppelin 0.7.2
 requires `^26.1.0`, which excludes 27.x. Bumping the SDK without a matching

@@ -59,7 +59,7 @@ audit. Do not represent them as audited.
 
 This is the live flow on the deployed testnet contracts, not a target —
 both halves below are implemented and reproducible; see
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md)
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md)
 in the `smart-contracts` repo for a real executed transaction.
 
 ### Preflight — off-chain, nothing committed

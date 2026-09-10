@@ -38,10 +38,11 @@ Stellar and Soroban. It holds Stellar Asset Contract balances and enforces
 policy on payments, approvals, automation, and recovery through smart
 contracts.
 
-This site is the technical documentation for the contracts: what each module
+This site is the technical documentation for the system: what each contract
 does, what every entrypoint expects, what the errors and events mean, which
-guarantees the system makes, how to run the test suite that proves them, and
-how to deploy to testnet.
+guarantees the system makes, how to run the test suite that proves them, where
+the testnet and mainnet deployments live, how to operate a treasury from the
+production dApp, and how to integrate from TypeScript with the SDK.
 
 It is written for developers integrating with the contracts, reviewers
 verifying the guarantees, and operators running a treasury.
@@ -54,6 +55,10 @@ verifying the guarantees, and operators running a treasury.
 | Call the policy layer                     | [PolicyEngine reference](/contracts/policy-engine) |
 | Verify the security claims                | [Security guarantees](/security/)                  |
 | Run the tests yourself                    | [Running the tests](/testing/)                     |
+| Find the mainnet addresses and hashes     | [Mainnet deployment](/deployment/mainnet)          |
+| Operate a treasury from the dApp          | [Operator guide](/operators/)                      |
+| Review it end to end, rejections included | [Testing support guide](/operators/testing-guide)  |
+| Integrate from TypeScript                 | [TypeScript SDK](/sdk/)                            |
 | See exactly what is implemented today     | [Status](/status)                                  |
 
 ## Implementation status

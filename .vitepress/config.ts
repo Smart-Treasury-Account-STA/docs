@@ -13,7 +13,7 @@ const BASE = "/docs/";
 export default defineConfig({
   title: "Smart Treasury Account",
   description:
-    "Technical documentation for the Smart Treasury Account Soroban contracts: architecture, entrypoints, security model, test suite, and deployment.",
+    "Technical documentation for the Smart Treasury Account: Soroban contracts, security model, test suite, testnet and mainnet deployment, operator guide, and TypeScript SDK.",
   lang: "en-US",
   base: BASE,
   cleanUrls: true,
@@ -43,7 +43,9 @@ export default defineConfig({
       { text: "Contracts", link: "/contracts/", activeMatch: "/contracts/" },
       { text: "Security", link: "/security/", activeMatch: "/security/" },
       { text: "Testing", link: "/testing/", activeMatch: "/testing/" },
-      { text: "Deployment", link: "/deployment/", activeMatch: "/deployment/" },
+      { text: "Deployment", link: "/deployment/mainnet", activeMatch: "/deployment/" },
+      { text: "Operators", link: "/operators/", activeMatch: "/operators/" },
+      { text: "SDK", link: "/sdk/", activeMatch: "/sdk/" },
     ],
 
     sidebar: [
@@ -79,7 +81,23 @@ export default defineConfig({
       },
       {
         text: "Deployment",
-        items: [{ text: "Testnet", link: "/deployment/" }],
+        items: [
+          { text: "Mainnet", link: "/deployment/mainnet" },
+          { text: "Testnet", link: "/deployment/" },
+        ],
+      },
+      {
+        text: "Operators",
+        items: [
+          { text: "Operator guide", link: "/operators/" },
+          { text: "Testing support guide", link: "/operators/testing-guide" },
+          { text: "Release checklist", link: "/operators/release-checklist" },
+          { text: "Reporting issues", link: "/operators/reporting-issues" },
+        ],
+      },
+      {
+        text: "SDK",
+        items: [{ text: "TypeScript SDK", link: "/sdk/" }],
       },
     ],
 

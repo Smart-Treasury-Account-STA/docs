@@ -139,7 +139,7 @@ aren't being actively validated but still need to survive.
 | 2008 | `OperationNotAllowed` | `operation` was not enabled via `set_operation_allowed`                 |
 
 These codes are live and verifiable on testnet right now — see
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md)
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md)
 §6.1 and §6.5 for reproducible `stellar contract invoke` commands that
 trigger `RecipientNotAllowed` (2004), `AmountAboveLimit` (2005), and
 `VersionMismatch` (2006) against the live deployed contract.
@@ -205,4 +205,4 @@ Exports exactly nine functions: `version`, `extend_ttl`, `initialize`,
 `set_operation_allowed`, `set_recipient_allowed`.
 
 Live deployed WASM hash and testnet contract ID: see
-[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/v1-full-implementation/docs/TESTNET_DEPLOYMENT.md).
+[`docs/TESTNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_DEPLOYMENT.md).
