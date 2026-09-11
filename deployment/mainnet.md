@@ -175,8 +175,9 @@ only inside an intent's ledger window, and checks
 cannot execute the same child sequence twice. The relayer role's authority is
 bounded by the contracts — see [what the relayer cannot do](/security/).
 
-::: warning Not deployed yet
-No scheduled trigger and no alerting are wired at the time of writing: due
-jobs run when an operator presses "Run due jobs" or runs `pnpm relayer:run`.
-See [Status](/status).
+::: tip Scheduled trigger
+A QStash schedule calls the relayer's run endpoint on a cron in production,
+with a signature the endpoint verifies; QStash retries a failed run and
+reports it to its failure callback. `pnpm relayer:run` is the manual
+fallback. See [Status](/status).
 :::

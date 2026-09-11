@@ -255,27 +255,32 @@ version or window of an intent, cannot execute outside the window, and cannot
 execute the same child sequence twice. See
 [what the relayer cannot do](/security/).
 
-1. Paste the operator token into **Relayer admin token** and click **Unlock
-   session**. The token is exchanged once for an httpOnly session cookie and
-   is never kept in the browser; **Lock session** ends it.
+1. Connect the wallet that signs for the treasury. The first **Queue relayer**
+   or **Execute** asks that wallet to sign a short message — no transaction,
+   no fee. The signature opens an eight-hour session cookie bound to that
+   address; switching wallets asks the new one to sign. No operator token is
+   involved: before accepting the request the server checks on chain that
+   the address is a signer of this treasury.
 2. Each queued job is a card with the intent id, `child_sequence`, its status,
    a note (the last thing the relayer did with it, including the transaction
    hash once executed) and `ledgers <start> - <end>`.
-3. **Run due jobs** executes every queued job whose window is open. **Execute**
-   on one card runs that job alone. Both are disabled on terminal jobs — the
-   button's tooltip reads `This job is executed and will not run again.`
+3. **Execute** on a card runs that job now instead of waiting for the
+   schedule. It is disabled on terminal jobs (tooltip `This job is executed
+and will not run again.`) and while another run holds the job (`executing`,
+   inside its five-minute lease).
 
 Before submitting, the relayer re-reads the canonical intent and checks
 `is_child_executed` on chain; its own job store is bookkeeping, the contract is
 the authority. Jobs are stored in Postgres with optimistic versioning, so two
 relayer instances cannot both claim the same job.
 
-::: warning No scheduled trigger or alerting yet
-Nothing calls the relayer on a timer today. Due jobs run when an operator
-clicks **Run due jobs** or when the `pnpm relayer:run` CLI from the dApp
-repository posts to `/api/relayer/run`. There is no alerting on failed or
-missed executions. Until a scheduled trigger and alerts are deployed, treat
-the relayer as an operator-driven tool and check the job cards yourself.
+::: tip Scheduled trigger
+Queued jobs run on their own once their window opens: a QStash schedule
+calls the relayer's run endpoint on a cron, with a signature the endpoint
+verifies, and retries a failed run before reporting it to its failure
+callback. `pnpm relayer:run` from the dApp repository (operator token) is
+the manual fallback. Check the job cards after a window opens; a job still
+`scheduled` well past it means the schedule did not run.
 :::
 
 ## Pause, freeze and recovery

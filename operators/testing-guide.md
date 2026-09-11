@@ -130,9 +130,9 @@ retrying.
 
 1. In "Scheduled payment": asset, destination, **Generate intent ID**, amount, `Max executions` `1`, the suggested `Interval ledgers`, and an `Execution window` whose start is at least 12 ledgers ahead of the current one (about 70 s on mainnet, about 60 s on testnet; the form refuses a shorter lead) and whose end is comfortably later.
 2. **Simulate schedule**, then **Approve & create** (two wallet prompts, as for a payment).
-3. The intent appears in the list with status `pending`. Click **Queue relayer**.
-4. In "Scheduled payment relayer", paste the admin token, **Unlock session**. The job card shows the intent id, `child_sequence 0`, its status, and `ledgers <start> - <end>`.
-5. Once "Latest ledger" is past the window's start, click **Run due jobs**.
+3. The intent appears in the list with status `pending`. Click **Queue relayer**. The first time, the wallet asks to sign a short message (this opens the session; it is not a transaction). The button then reads **Queued**.
+4. In "Scheduled payment relayer", the job card shows the intent id, `child_sequence 0`, its status, and `ledgers <start> - <end>`.
+5. Once "Latest ledger" is past the window's start, either wait for the scheduled run (production) or click **Execute** on the card (any environment — a testnet preview has no schedule).
 
 **Expect:** the card flips to `executed` and its note carries the transaction
 hash; the destination received the amount. The card's **Execute** button is
@@ -147,12 +147,15 @@ and the contract reads everything else from its own record.
 **Cancel before the window:** create a second intent the same way, then use
 "Cancel an existing scheduled payment" (or **Load into cancel form** on the
 row) and **Cancel scheduled payment** (one wallet prompt). The row shows
-`cancelled`; a queued job for it never executes, and **Run due jobs** reports
-nothing due for it once its window opens.
+`cancelled`; a queued job for it never executes — the next run (the schedule,
+or **Execute** on its card) marks it `blocked` with the note `Scheduled
+intent is cancelled on-chain.`
 
-::: tip Session cookie, not a stored token
-The admin token is exchanged once for an httpOnly session cookie. The token
-itself is never kept in browser state or storage.
+::: tip Wallet session, not an operator token
+The console never holds an operator token. Your wallet signs a challenge
+once; the resulting httpOnly session cookie names your address, and every
+queue or execute is authorized on the server against the treasury's signers
+on chain.
 :::
 
 ### 8. Signer lockout guard

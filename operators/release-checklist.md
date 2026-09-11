@@ -37,19 +37,21 @@ the record.
   - `NEXT_PUBLIC_SMART_ACCOUNT_ID`, `NEXT_PUBLIC_POLICY_ENGINE_ID`, `NEXT_PUBLIC_INTENT_REGISTRY_ID`, `NEXT_PUBLIC_RECOVERY_MANAGER_ID`, `NEXT_PUBLIC_TRANSFER_ADAPTER_ID`, `NEXT_PUBLIC_SPLIT_ADAPTER_ID`
   - `NEXT_PUBLIC_DEFAULT_ASSET_CONTRACT_ID` (the XLM Stellar Asset Contract on mainnet), `NEXT_PUBLIC_DEFAULT_DESTINATION` (an existing, allowlisted account)
   - `NEXT_PUBLIC_ACCOUNT_FACTORY_ID`, `NEXT_PUBLIC_RELAYER_EXECUTOR_ADDRESS`
-  - server-only, never `NEXT_PUBLIC_`: `RELAYER_EXECUTOR_SECRET`, `RELAYER_ADMIN_TOKEN`, `RELAYER_APP_URL`, `DATABASE_URL`
+  - server-only, never `NEXT_PUBLIC_`: `RELAYER_EXECUTOR_SECRET`, `RELAYER_ADMIN_TOKEN`, `RELAYER_APP_URL`, `DATABASE_URL`, and for the scheduled trigger `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`, `QSTASH_RELAYER_RUN_URL`
 - [ ] The network is derived from the passphrase: the header of the deployed site reads `Stellar mainnet` (or `Stellar testnet`) and the contract list in the console matches the record.
 - [ ] Executor account (`NEXT_PUBLIC_RELAYER_EXECUTOR_ADDRESS`, the public key of `RELAYER_EXECUTOR_SECRET`) exists and is funded on the target network. A treasury deployed through the dApp registers this address as its `intent_registry` executor; an unfunded executor only fails at execution time.
 - [ ] `pnpm db:migrate` run against the environment's `DATABASE_URL` (one Neon branch per environment; the migrations in `src/lib/db/migrations` are committed).
 - [ ] Smoke test on the deployed site with a disposable treasury: connect, read state, one **Policy check** rejection, one payment confirmed with an explorer link.
-- [ ] Relayer: one scheduled payment created in the console, queued, executed by **Run due jobs** to `executed` with a transaction hash, and its **Execute** button disabled afterwards.
-- [ ] Scheduled trigger, if one is deployed for this release, points at `POST <RELAYER_APP_URL>/api/relayer/run` with the credential that route accepts, and its failure notifications reach an operator.
+- [ ] Relayer: one scheduled payment created in the console, queued (the wallet signs the session challenge), executed — by the schedule, or by **Execute** on its card — to `executed` with a transaction hash, and its **Execute** button disabled afterwards.
+- [ ] Scheduled trigger: the QStash schedule is registered against the exact URL in `QSTASH_RELAYER_RUN_URL`, the signing keys are set in the same Vercel environment (Production has them; a Preview has no schedule unless one is registered for it), a run shows `{"trigger":"qstash",...}` in the QStash logs, and the failure callback reaches an operator.
 - [ ] `pnpm audit` reviewed; anything critical in a runtime dependency resolved or explicitly accepted in the release notes.
 
-::: warning No scheduled trigger ships by default
-`POST /api/relayer/run` is invoked by `pnpm relayer:run` or the console's
-**Run due jobs**. A deployment that relies on unattended execution must
-configure its own trigger and document it here.
+::: warning The schedule is per environment
+`POST /api/relayer/run` accepts a QStash delivery only where the signing
+keys are configured, and only for the pinned URL. A new environment — a
+preview, a second deployment — has no schedule until one is registered for
+it; until then its due jobs run only through `pnpm relayer:run` or the
+console's **Execute**.
 :::
 
 ## Documentation (`docs`, this site)
