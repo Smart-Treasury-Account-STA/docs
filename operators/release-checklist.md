@@ -26,7 +26,7 @@ the record.
 - [ ] `MAINNET_CONTRACTS`, `MAINNET_ASSETS`, and `TESTNET` in `src/config.ts` equal the deployment records.
 - [ ] Examples run against the target network: `STA_NETWORK=mainnet STA_MAINNET_RPC_URL=<provider> npx tsx examples/read-treasury.ts` returns the recorded owner, policy version, and factory WASM hashes; the signing examples were run at least once on testnet.
 - [ ] `git push --follow-tags`: the `v*` tag triggers `.github/workflows/publish.yml`, which reruns lint/typecheck/test/build, refuses a tag that does not equal `package.json`'s version, and publishes through npm OIDC trusted publishing. No `NPM_TOKEN`, `registry-url`, or `NODE_AUTH_TOKEN` is added to that workflow — either one silently switches npm back to token auth and the publish fails.
-- [ ] `npm view sta-sdk version` shows the new version, and the dApp's dependency range picks it up (a caret on `0.1.x` does not reach `0.2.0`; bump `package.json` in the dApp).
+- [ ] `npm view sta-sdk version` shows the new version. The dApp pins the exact version (`"sta-sdk": "0.2.1"` in its `package.json`) so that an SDK release never changes the dApp's chain code silently: bump it there, run `pnpm install`, and rerun the dApp checks below.
 
 ## dApp and relayer (`dApp`)
 

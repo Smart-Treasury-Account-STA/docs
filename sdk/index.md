@@ -17,13 +17,12 @@ pnpm add sta-sdk @stellar/stellar-sdk
 application controls its version and only one copy of its classes is loaded.
 Node `>=20` is required: authorization nonces come from Web Crypto.
 
-::: warning Check the published version
-At the time of writing npm serves `sta-sdk@0.1.1`, whose mainnet configuration
-is `undefined`; `0.2.0`, which adds mainnet support as described below, is in
-the process of being published. Run `npm view sta-sdk version` before relying
-on the mainnet helpers, and use the
-[repository](https://github.com/Smart-Treasury-Account-STA/sdk) (branch
-`main`, `examples/`) if the published version is still `0.1.x`.
+::: tip Published version
+npm serves `sta-sdk@0.2.1` (2026-09-11). Require `>=0.2.1`: `0.1.x` has no
+mainnet configuration, and `0.2.0`'s `prepare*` helpers build a single-node
+authorization entry that every fund-moving call refuses
+(`Error(Auth, InvalidAction)`) and bid `BASE_FEE`, which mainnet rejects with
+`txInsufficientFee`. `npm view sta-sdk version` shows what is published.
 :::
 
 ## Network configuration
@@ -122,24 +121,37 @@ which you can compare with the [mainnet deployment record](/deployment/mainnet).
 
 ## Modules
 
-| Module     | What it exports                                                                                                                                                                                         |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`   | `NetworkConfig`, `TESTNET`, `MAINNET_CONTRACTS`, `MAINNET_ASSETS`, `mainnet`, `buildMainnetConfig`, `MAINNET_NETWORK_PASSPHRASE`                                                                        |
-| `rpc`      | `serverFor`                                                                                                                                                                                             |
-| `state`    | Typed reads: `readAccountStatus`, `readOwner`, `readContextRule(s)`, `isNonceUsed`, `readPolicyVersion`, `readScheduledIntent`, `isChildExecuted`, recovery and guardian reads, `readFactoryWasmHashes` |
-| `payments` | `prepareTransferPayment`, `prepareSplitPayment`, `prepareScheduledPayment`, `prepareCancelScheduledPayment`, `prepareRelayerExecution`, `signAndSubmit`                                                 |
-| `auth`     | `buildSmartAccountAuthEntries`, `buildExecutorAuthEntry` and the auth-entry helpers                                                                                                                     |
-| `events`   | `parseContractEvent`, `parseContractEvents`, `findEvent`, one typed interface per contract event                                                                                                        |
+| Module     | What it exports                                                                                                                                                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`   | `NetworkConfig`, `TESTNET`, `MAINNET_CONTRACTS`, `MAINNET_ASSETS`, `mainnet`, `buildMainnetConfig`, `MAINNET_NETWORK_PASSPHRASE`                                                                                                          |
+| `rpc`      | `serverFor` — the one `rpc.Server` factory, applies `NetworkConfig.rpcHeaders`                                                                                                                                                            |
+| `fee`      | `inclusionFee` — the market-driven inclusion bid every `prepare*` uses by default ([Fees](https://github.com/Smart-Treasury-Account-STA/sdk/blob/main/README.md#fees))                                                                    |
+| `state`    | Typed reads: `readAccountStatus`, `readOwner`, `readContextRule(s)`, `isNonceUsed`, `readPolicyVersion`, `readScheduledIntent`, `isChildExecuted`, recovery and guardian reads, `readFactoryWasmHashes`; `validatePolicy`, `readSignerId` |
+| `payments` | `prepareTransferPayment`, `prepareSplitPayment`, `prepareScheduledPayment`, `prepareCancelScheduledPayment`, `prepareRelayerExecution`, `discoverSmartAccountInvocation`, `submitTransaction`, `signAndSubmit`, `encode*Args`             |
+| `auth`     | `buildSmartAccountAuthEntries`, `buildExecutorAuthEntry`, `buildClassicAuthEntry`, `buildInvocation`, `countAuthContexts`, `selectInvocationForAddress`, `selectAllInvocationsForAddress`                                                 |
+| `events`   | `parseContractEvent`, `parseContractEvents`, `findEvent`, one typed interface per contract event                                                                                                                                          |
+| `scval`    | `structScVal` and the scalar encoders (`addressScVal`, `i128ScVal`, `u64ScVal`, `bytesN32ScVal`, `signerDelegatedScVal`, …)                                                                                                               |
 
 ## Versioning against a deployment
 
 Each release states which contract deployment it targets. The WASM behind both
 networks is the same source at the same hashes.
 
-| `sta-sdk`     | Network | Deployment record                                                                                                                                   | `smart_account` | `account_factory` |
-| ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------- |
-| 0.2.0         | mainnet | [`MAINNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/MAINNET_DEPLOYMENT.md) §4–§5                 | `CDTE6DBM…VL7W` | `CCFIPN4T…QAAV`   |
-| 0.2.0 / 0.1.x | testnet | [`TESTNET_FACTORY_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_FACTORY_DEPLOYMENT.md) §13.2 | `CD6GY4UU…ULMQ` | `CAQQTRRY…GUZO`   |
+| `sta-sdk`           | Network | Deployment record                                                                                                                                   | `smart_account` | `account_factory` |
+| ------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------- |
+| 0.2.1, 0.2.0        | mainnet | [`MAINNET_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/MAINNET_DEPLOYMENT.md) §4–§5                 | `CDTE6DBM…VL7W` | `CCFIPN4T…QAAV`   |
+| 0.2.1, 0.2.0, 0.1.x | testnet | [`TESTNET_FACTORY_DEPLOYMENT.md`](https://github.com/Smart-Treasury-Account-STA/smart-contracts/blob/main/docs/TESTNET_FACTORY_DEPLOYMENT.md) §13.2 | `CD6GY4UU…ULMQ` | `CAQQTRRY…GUZO`   |
+
+`0.2.1` makes `prepare*` usable against the deployed contracts and on
+mainnet: recording-mode discovery of the authorization tree with one rule id
+per node — `0.2.0` built a single node, which every fund-moving call rejects
+([Authorization trees](https://github.com/Smart-Treasury-Account-STA/sdk/blob/main/README.md#authorization-trees)); a market
+inclusion fee instead of `BASE_FEE`, which mainnet refuses
+([Fees](https://github.com/Smart-Treasury-Account-STA/sdk/blob/main/README.md#fees)); `submitTransaction` for envelopes a wallet
+signs ([Submitting from a browser](https://github.com/Smart-Treasury-Account-STA/sdk/blob/main/README.md#submitting-from-a-browser));
+and the scalar encoders, `buildClassicAuthEntry`, `validatePolicy` and
+`readSignerId` exported so an application need not keep copies. No breaking
+API change from `0.2.0`.
 
 `0.2.0` replaced the `MAINNET` / `NETWORKS` placeholders of `0.1.x` (both were
 `undefined` for mainnet) with `MAINNET_CONTRACTS` and `mainnet()`, added
